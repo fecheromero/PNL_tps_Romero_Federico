@@ -1,7 +1,16 @@
 # Desafio 3 
 
-Este documento presenta las conclusiones definitivas tras el entrenamiento y evaluación de diversos modelos de Deep Learning sobre un dataset de aproximadamente 60 canciones (4,915 versos). Para simplicidad de las pruebas y la ejecución se le asigno un "alias" a cada modelo. La definición tecnica de cada modelo se puede encontrar en el collab. Se vera en el collab a su vez codigo utilizado para guardar los modelos entrenados en drive y cargarlos desde ahi, esto fue necesario dado que los entrenamientos se extendian a veces por encima de las 6 hs y recuperar algunos modelos pre entrenados fue necesario para poder llegar a evaluar todo antes de perder la instancia de T4.
+este Doc referencia al [Desafio 3 colab](https://github.com/fecheromero/PNL_tps_Romero_Federico/blob/main/Desafio_3.ipynb)
 
+Este documento presenta las conclusiones definitivas tras el entrenamiento y evaluación de diversos modelos de Deep Learning sobre un dataset de aproximadamente 60 canciones de twenty one pilots (las mismas utilizadas para el desafio 2) (4,915 versos). Para simplicidad de las pruebas y la ejecución se le asigno un "alias" a cada modelo. La definición tecnica de cada modelo se puede encontrar en el collab. Se vera en el collab a su vez codigo utilizado para guardar los modelos entrenados en drive y cargarlos desde ahi, esto fue necesario dado que los entrenamientos se extendian a veces por encima de las 6 hs y recuperar algunos modelos pre entrenados fue necesario para poder llegar a evaluar todo antes de perder la instancia de T4.
+
+### Asistencia
+Se ha utilizado la ayuda del a IA integrada a colab para:
+- realizar la integracion con drive 
+- crear los displays en modo tabla de los resultados de los entrenamientos.
+- las funciones auxiliares para recorrer todos los modelos y generar texto con distintas variaciones de beam search y temperatura.
+- tambien  se ha utilizado gemini para realiza, a partir de los logs de las epochs de entrenamiento, el diagrama de resultados que se presenta en la sección `Tabla comparativa de performance final` y formatear ademas de mejorar la escritura de las conclusiones obtenidas del analisis de resultados.
+  
 ##  Tabla Comparativa de Performance Final
 
 | Modelo | Perplejidad Final | Perplejidad epoch 1 | Loss final |  Inferencia Destacada ("can you save...") | Estado |
@@ -40,6 +49,7 @@ Se han iterado los modelos con menos neuronas (15-25) y hasta 180-200. Los mejor
 ### Fallo en la atención
 
 Si  bien no estaban dentro de los modelos vistos para esta practica, me dio curiosidad ver como cambia el comportamiento con una CNN y atención. Claramente este modelo overfitteo rápido, el earlyStopper corto en la epoch 5, y, aunque tenia 2 dropouts de 0.2 y 0.3 al parecer no fue suficiente. Mi interpretación es que por un lado necesita un dropout mas alto para llegar a mejores resultados y, ademas, posiblemente las 64 dimensiones del Embedding quedaron demasiado grandes para el modelo de caracteres sobre el que trabajamos.
+
 ---
 
 ##  3. Análisis Semántico de Resultados
