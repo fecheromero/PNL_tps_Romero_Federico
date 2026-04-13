@@ -1,120 +1,143 @@
-#  Reporte Desafio 3
+# Desafio 3 
 
-Utilice el mismo dataset que use en el desafio 2 con todas las canciones de la banda: **Twenty One Pilots**.  Aproximadamente 4195  frases.
+Este documento presenta las conclusiones definitivas tras el entrenamiento y evaluación de diversos modelos de Deep Learning sobre un dataset de aproximadamente 60 canciones (4,915 versos). Para simplicidad de las pruebas y la ejecución se le asigno un "alias" a cada modelo. La definición tecnica de cada modelo se puede encontrar en el collab. Se vera en el collab a su vez codigo utilizado para guardar los modelos entrenados en drive y cargarlos desde ahi, esto fue necesario dado que los entrenamientos se extendian a veces por encima de las 6 hs y recuperar algunos modelos pre entrenados fue necesario para poder llegar a evaluar todo antes de perder la instancia de T4.
 
-## 📊 1. Métricas y Performance
+##  Tabla Comparativa de Performance Final
 
-| Modelo | Perplejidad Inicial (E1) | Perplejidad Final | Tiempo / Época | Configuración de Entrada | Estado Final |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **SimpleRNN** | 9.32 | 6.41 | < 60s | TimeDist + One-Hot | Baseline Inestable |
-| **GRU (Model 1)** | 9.51 | 6.75 | ~730s | TimeDist + One-Hot | **Éxito?: Coherencia por overfittig** |
-| **LSTM (Model 2)** | 11.54 | 8.18 | ~910s | TimeDist + One-Hot | Ruido Simbólico |
-| **Doble GRU** | 9.03 | **6.55** | ~890s | TimeDist + One-Hot | Overfitting Local |
-| **LstmEmbed_v1** | 10.60 | 7.98 | ~550s | Embedding (64 dim) | Ruido Semántico |
-| **Conv_Atten_v1** | 8.41 | 10.67 | **33s** | Embedding + CNN | Bucle (Efecto Loro) |
-| **LstmEmbed_v2** | N/A | N/A | ~600s | **Embed(16) + Bidir** | Simbolismo Repetitivo |
-| **Conv_Atten_v2** | **23.03** | **113.78** | ~2300s | **CNN + Attention + Dropout**| Colapso / Alucinación |
+| Modelo | Perplejidad Final | Perplejidad epoch 1 |  Inferencia Destacada ("can you save...") | Estado |
+| :--- | :--- | :---  |  :--- | :--- |
+| **SimpleRNN** | 6.69 | 9.6 | `...the want the want the want` | Estable / Limitado |
+| **GRU**  | 7.16 | 9.08 | `...my soul the street` | Temático / Involutivo |
+| **LSTM**  | 8.50 | 12.4 | `...the the the the the` | Colapso de Varianza |
+| **Doble GRU** | **6.49** | 9.3 | `...you the the the the` | Estable / Conservador |
+| **LstmEmbed** | 6.84 | 11.8 | `...my head to stay to the start` | **Máxima Coherencia** |
+| **ConvAtten** | 7.82 | 9.4 | `...me for me the for me` | Rítmico / Bucle |
+
 
 ---
 
-## 🏗️ 2.  Porque se iteraron lstm y conv?
+##  2. Análisis del Comportamiento de la Perplejidad
 
+En un dataset reducido (~60 canciones), la perplejidad actuó como un indicador crítico de la "salud" del aprendizaje. Observamos tres comportamientos distintos:
 
-A diferencia de la v1, la **v2** buscó mayor regularización y extracción de características locales antes de la atención aumentando el dropout  en 2 momentos antes de la conv1d y despues  de la misma. Pero los resultados aun asi no fueron mejores.
-En cuanto a la LSTM_v2 se redujo la cantidad de dimensiones de 64 a 16 apuntando a evitar generar mucho ruido sobre un dataset chico por sobredimensionar los vectores. Aun asi los resultados tampoco mejoraron. 
+###  La Involución de la GRU (Overfitting Prematuro)
+La GRU comenzó con una perplejidad excelente (6.60 en E4) pero terminó subiendo a 7.16. 
+* **Interpretación:** Memorizó rápidamente secuencias dominantes. El modelo dejó de generalizar para intentar replicar el dataset.
+
+###  El Valle de Optimización del LstmEmbedding
+Este modelo alcanzó su punto óptimo en la Época 16 (6.61). Las épocas posteriores redujeron el *loss* pero aumentaron la perplejidad.
+* **Interpretación:** El espacio latente del embedding (capa de 90 unidades) logró capturar la estructura de las palabras, pero tras 16 iteraciones, empezó a "especializarse" en el ruido estadístico del texto (muletillas, errores de puntuación), perdiendo calidad predictiva.
+
+### Estabilidad en Doble GRU
+Fue el modelo con la perplejidad más baja y constante. Pero aun asi los resultados fueron decepcionantes: quedo repitiendo articulos sin poder generar frases con sentido.
+
+##  Variación en cantidad de unidades
+
+Se han iterado los modelos con menos neuronas (15-25) y hasta 180-200. Los mejores resultados: generación de texto cercana a frases con sentido, se han obtenido con unidades entre 90 y 100 dependiendo el modelo. En la mayoria de los casos anteriores o se llegaba a repetición de articulos o gran cantidad de simbolos de puntuación perdidos en las frases.
+
+---
+
+##  3. Análisis Semántico de Resultados
+
+###  El Éxito del Embedding (LstmEmbedding)
+Fue el único modelo capaz de generar una estructura lírica creíble: `"can you save my head to stay to the start"`. 
+* **Interpretación:** Al no usar One-Hot, el modelo pudo agrupar caracteres similares en un espacio vectorial. Esto le permitió "entender" que después de un verbo suele venir un pronombre o un sustantivo, manteniendo la coherencia gramatical incluso en frases que no existen textualmente en el dataset.
+
+El GRU simple logro a su vez frases que podrían  acercarse a tener cierto sentido `"can you save that I want to the"` pero el lstmEmbedding claramente gano en la composición lírica y semántica. 
+
+###  El "Modo Tartamudo" (LSTM, DobleGRU y conv1 con atención)
+Ambos colapsaron en la repetición de articulos o preposiciones como "the" y "for". 
+* **Interpretación:** En el inglés de las letras de canciones, estos tokens tienen mucha probabilidad estadística. Si el modelo no tiene suficiente neuronas o aleatoriedad para saltar a la siguiente palabra probable, se queda atrapado en el camino de menor resistencia.
 
 ---
 
 
-## 🧪 3. Evaluación Documental de Inferencia
+## 📌 Conclusión Final
+Para un corpus de 60 canciones, la arquitectura **LstmEmbedding (~90-100 unidades)** es la ganadora absoluta. Logró trascender la simple repetición de caracteres para construir imágenes poéticas alineadas con el estilo original.  Mientras que modelos de mayor capacidad se perdieron en el overfitting, incluso el modelo que dio menor perplejidad (GRU Simple).
 
-#### 🔹 Semilla 1: `"can you save"` (Secuencia Literal del Dataset)
-Esta semilla evalúa la capacidad de reconstrucción y memoria asociativa de los modelos.
+---
+
+## Glosario
+
+### grafico de perplejidad
+<img width="567" height="455" alt="image" src="https://github.com/user-attachments/assets/021a1111-730e-45ea-b41e-5a3b8eacca17" />
+<img width="567" height="455" alt="image" src="https://github.com/user-attachments/assets/5077b7c5-30a0-482c-8809-f6cab25bea12" />
+<img width="576" height="455" alt="image" src="https://github.com/user-attachments/assets/94b7bf68-6ed4-4dfa-93e0-1ededb0a22ba" />
+<img width="567" height="455" alt="image" src="https://github.com/user-attachments/assets/e0489924-deba-44af-a664-350e68abb317" />
+<img width="563" height="455" alt="image" src="https://github.com/user-attachments/assets/8217e72f-021c-4172-8bcd-074e98147eb1" />
+<img width="576" height="455" alt="image" src="https://github.com/user-attachments/assets/38deb174-3383-43f3-b3ed-9c1d96b31138" />
+
+### pruebas 
+
 
 **Model: SimpleRNN**
-* `Greedy`: can you saveawuAAjAyAwuAAjAyAwuAAjAyAwuAAj
-* `Beam det`: can you saveawuAuxî)AOAywaq)Auîa
-* `Beam sto 0.7`: can you saveawuAuxî)AOAeawuAm)q.
-* `Beam sto 0.3`: can you saveawuAuxî)AOAywaq)Auîa
+
+  Greedy: can you save the want the want the want th
+  
+  Beam det: can you save you have you don't 
+  
+  Beam sto 0.7: can you save in the lave you say
+  
+  Beam sto 0.3: can you save you are the with yo
+
+--- 
 
 **Model: GRU**
-* `Greedy`: **can you save my heavy dirty soul? Can you**
-* * `Beam det`: **can you save my heavy dirty soul**
-* `Beam sto 0.7`: **can you save my heavy dirty soul**
-* `Beam sto 0.3`: **can you save my heavy dirty soul**
+
+  Greedy: can you save my soul the street In the str
+  
+  Beam det: can you save that I want to the 
+  
+  Beam sto 0.7: can you save the someone else's 
+  
+  Beam sto 0.3: can you save my sounds to start 
+
+--- 
 
 **Model: LSTM**
-* `Greedy`: can you savei!iîDKninQinQеinQеinQеinQеinQе
-* `Beam det`: can you saveKmhinQ!niéi,!mninQ.i
-* `Beam sto 0.7`: can you saveinDinQ.i,!mn.vié=qiD
-* `Beam sto 0.3`: can you saveinQ.i,!mninQ.i,!mnin
+
+  Greedy: can you save the the the the the the the t
+  
+  Beam det: can you save the the the the the
+  
+  Beam sto 0.7: can you save the I the se the Io
+  
+  Beam sto 0.3: can you save the the the the the
+
+--- 
 
 **Model: DobleGRU**
-* `Greedy`: can you savei!mîiéi,!mninDaeniKKK.znKKKKD.
-* `Beam det`: can you savei,Kddin!b.iqеiQ.!vni
-* `Beam sto 0.7`: can you saveiKminQ.ieavvDamî.îiK
-* `Beam sto 0.3`: can you savei!mîinQ.i?vD)d.qei!m
+
+  Greedy: can you save the the the the the the the t
+  
+  Beam det: can you save you the the the the
+  
+  Beam sto 0.7: can you save the me the se sime 
+  
+  Beam sto 0.3: can you save the the the the to 
+
+  --- 
 
 **Model: LstmEmbedding**
-* `Greedy`: can you savem—NNBSSSSSSSSSSSSSSSSSSSSSSSSS
-* `Beam det`: can you savem—N—jm—NKt((NpIxgNKt
-* `Beam sto 0.7`: can you savem—N—jSNUS——oIGNoIN—j
-* `Beam sto 0.3`: can you savem—N—jSNUSSIN—jSNgo((
 
-**Model: AttentionCNN (v2)**
-* `Greedy`: can you saveuygo-yu b5y! b5y! b5y! b5y! b5
-* `Beam det`: can you save vk vk vk vk vk vk v
-* `Beam sto 0.7`: can you save b5y mky.g-Y5Cy mky 
-* `Beam sto 0.3`: can you save b5yB AyB AyB AyB Ay
+  Greedy: can you save my head to stay to the start 
+  
+  Beam det: can you save, they know what you
+  
+  Beam sto 0.7: can you save, the will the stop,
+  
+  Beam sto 0.3: can you save my head to the star
 
----
+  --- 
 
-#### 🔸 Semilla 2: `"Nico will"` (Concepto Temático / No Literal)
-Esta semilla evalúa la capacidad de generalización semantica.
+**Model: AttentionCNN**
 
-**Model: SimpleRNN**
-* `Greedy`: Nico willqqr(Bxеrlwsrtzxr?lwsrtzxr:’t3r
-* `Beam det`: Nico willtxеtl’wrP3rzxlеtr(Br
-* `Beam sto 0.7`: Nico willqq’wFrs(Tw'r3xlz'r3x
-* `Beam sto 0.3`: Nico willtxеrlwsrtzxrslеLrlws
+  Greedy: can you save me for me the for me the for 
+  
+  Beam det: can you save you thing tore the 
+  
+  Beam sto 0.7: can you save you the the the for
+  
+  Beam sto 0.3: can you save you the for me the 
 
-**Model: GRU**
-* `Greedy`: Nico willcwWjcZ=jv=jfcAjALc('wJcRcvYLcR
-* `Beam det`: Nico willcvAjHJc(wjjwcZwWWqcZ
-* `Beam sto 0.7`: Nico willcvAjHJc(wjjwcZwWWcw(
-* `Beam sto 0.3`: Nico willcwWWcRHFLcLFLYcbLLjc
 
-**Model: LSTM**
-* `Greedy`: Nico will=pnw=Ln’,j=qó’j=jh?=Ln’,j=qó’j
-* `Beam det`: Nico will=pnw=ln’,j=b’nq=pnw=
-* `Beam sto 0.7`: Nico will=pnw=b’nq=pnw,F?=Ln’
-* `Beam sto 0.3`: Nico will=pnw=ln’,j=jh?=b’nq=
-
-**Model: DobleGRU**
-* `Greedy`: Nico will=pnw=b’nq=jhój= =qó’j=jn=Ln= =
-* `Beam det`: Nico will=pnw=b’nq=jhój=oj,L=
-* `Beam sto 0.7`: Nico will=pnw=b’nq=jhój= =qó’
-* `Beam sto 0.3`: Nico will=pnw=b’nq=jhój= =qó’
-
-**Model: LstmEmbedding**
-* `Greedy`: Nico willwJcJALLLcJALLLcJALLLcJALLLcJAL
-* `Beam det`: Nico willw5vw5vw5vw5vw5vw5vw5
-* `Beam sto 0.7`: Nico willw5vw5vw5vw5vw5vw5vwq
-* `Beam sto 0.3`: Nico willw5vw5vw5vw5vw5vw5vw5
-
-**Model: AttentionCNN (v2)**
-* `Greedy`: Nico willezHeeeGHbaaG=zeVF,?—i?lezeVe=V
-* `Beam det`: Nico willezHNlezHNlezHNlezHNl
-* `Beam sto 0.7`: Nico willezHe=zeeeHGweeHG=.Yl
-* `Beam sto 0.3`: Nico willezHe=zeeeHGVrleV=eVV
-
----
-
-## 🔍 4. Análisis, Hallazgos y Conclusiones
-
-* El modelo que usa CNN + atencion v2 alcanzó un **accuracy del 99.6%** y un **loss de 0.0122**, pero la **perplejidad final de 113.78**. Los resultados fueron decepcionates, la hipotesis es que el dataset es muy chico como para poder aprender con enmbeddings que quizas quearon grandes en cuanto al a cantidad de parametros, rapidamente entro en secuencias repetitivas.
-* La **GRU** logra terminar la frase "Can you save"  porque funciona como una memoria asociativa simple. Al ser una frase recurrente, recorre un camino estadístico ya grabado. Al darle una frase que no forma parte exacta de lo aprendido hizo agua como el resto. Da cuenta de overfitting.
-* En general el beam estocastico con menor temperatura redujo la presencia de caracteres especiales. Aun asi, no logro genrear palabras con sentido.
-### 4.4 Conclusión Final: Simplicidad vs. Complejidad
-Decepcionantemente luego de pasar mas 5hs entrenando algunos de los modelos de ejemplo no he logrado romper la barrera de la perlejidad de la simple RNN de 6.41. Logrando en uno solo de los ejemplos palabras coherentes. 
-Para datasets de nicho (letras de una sola banda), las arquitecturas **Recurrentes (GRU)** demostraron ser superiores (aunque solo logran repetir como loros). Las arquitecturas de **Atención** son extremadamente sensibles: sin una cantidad masiva de datos o un Positional Encoding perfecto, tienden a memorizar el ruido (overfitting) mucho más rápido que las RNN, como demuestra el accuracy de 99% que no se traduce en lenguaje humano.
