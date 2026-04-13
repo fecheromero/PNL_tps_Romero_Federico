@@ -4,14 +4,14 @@ Este documento presenta las conclusiones definitivas tras el entrenamiento y eva
 
 ##  Tabla Comparativa de Performance Final
 
-| Modelo | Perplejidad Final | Perplejidad epoch 1 |  Inferencia Destacada ("can you save...") | Estado |
-| :--- | :--- | :---  |  :--- | :--- |
-| **SimpleRNN** | 6.69 | 9.6 | `...the want the want the want` | Estable / Limitado |
-| **GRU**  | 7.16 | 9.08 | `...my soul the street` | Temático / Involutivo |
-| **LSTM**  | 8.50 | 12.4 | `...the the the the the` | Colapso de Varianza |
-| **Doble GRU** | **6.49** | 9.3 | `...you the the the the` | Estable / Conservador |
-| **LstmEmbed** | 6.84 | 11.8 | `...my head to stay to the start` | **Máxima Coherencia** |
-| **ConvAtten** | 7.82 | 9.4 | `...me for me the for me` | Rítmico / Bucle |
+| Modelo | Perplejidad Final | Perplejidad epoch 1 | Loss final |  Inferencia Destacada ("can you save...") | Estado |
+| :--- | :--- | :---  |  :--- | :--- | :--- |
+| **SimpleRNN** | 6.69 | 9.6 | 2.1358 | `...the want the want the want` | Estable / Limitado |
+| **GRU**  | 7.16 | 9.08 | 1.6391 | `...my soul the street` | Temático / Involutivo |
+| **LSTM**  | 8.50 | 12.4 | 2.1913 | `...the the the the the` | Colapso de Varianza |
+| **Doble GRU** | **6.49** | 9.3 | 1.9735 | `...you the the the the` | Estable / Conservador |
+| **LstmEmbed** | 6.84 | 11.8 | 0.0497 | `...my head to stay to the start` | **Máxima Coherencia** |
+| **ConvAtten** | 7.82 | 9.4 | 0.0643 | `...me for me the for me` | Rítmico / Bucle |
 
 
 ---
