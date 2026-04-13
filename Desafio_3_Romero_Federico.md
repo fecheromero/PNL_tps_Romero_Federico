@@ -10,7 +10,10 @@ Se ha utilizado la ayuda del a IA integrada a colab para:
 - crear los displays en modo tabla de los resultados de los entrenamientos.
 - las funciones auxiliares para recorrer todos los modelos y generar texto con distintas variaciones de beam search y temperatura.
 - tambien  se ha utilizado gemini para realiza, a partir de los logs de las epochs de entrenamiento, el diagrama de resultados que se presenta en la sección `Tabla comparativa de performance final` y formatear ademas de mejorar la escritura de las conclusiones obtenidas del analisis de resultados.
-  
+
+
+###  Se puede cambiar el valor de la variable USE_DRIVE a True para  guardar los modelos en drive y asi no tener que entrenar  todos en una misma run.
+
 ##  Tabla Comparativa de Performance Final
 
 | Modelo | Perplejidad Final | Perplejidad epoch 1 | Loss final |  Inferencia Destacada ("can you save...") | Estado |
