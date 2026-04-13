@@ -31,10 +31,15 @@ Este modelo alcanzó su punto óptimo en la Época 16 (6.61). Las épocas poster
 ### Estabilidad en Doble GRU
 Fue el modelo con la perplejidad más baja y constante. Pero aun asi los resultados fueron decepcionantes: quedo repitiendo articulos sin poder generar frases con sentido.
 
-##  Variación en cantidad de unidades
+###  Variación en cantidad de unidades
 
 Se han iterado los modelos con menos neuronas (15-25) y hasta 180-200. Los mejores resultados: generación de texto cercana a frases con sentido, se han obtenido con unidades entre 90 y 100 dependiendo el modelo. En la mayoria de los casos anteriores o se llegaba a repetición de articulos o gran cantidad de simbolos de puntuación perdidos en las frases.
 
+---
+
+### Fallo en la atención
+
+Si  bien no estaban dentro de los modelos vistos para esta practica, me dio curiosidad ver como cambia el comportamiento con una CNN y atención. Claramente este modelo overfitteo rápido, el earlyStopper corto en la epoch 5, y, aunque tenia 2 dropouts de 0.2 y 0.3 al parecer no fue suficiente. Mi interpretación es que por un lado necesita un dropout mas alto para llegar a mejores resultados y, ademas, posiblemente las 64 dimensiones del Embedding quedaron demasiado grandes para el modelo de caracteres sobre el que trabajamos.
 ---
 
 ##  3. Análisis Semántico de Resultados
