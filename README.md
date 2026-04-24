@@ -15,3 +15,6 @@ https://colab.research.google.com/drive/1nP267466z3B58_hkWRqMbhrlV9XeI8Ir?usp=sh
 
 ## Desafio 3:
 Las conclusiones y todo el analisis de este desafio se  encuentran en [Desafio_3_Romero_Federico.md](https://github.com/fecheromero/PNL_tps_Romero_Federico/blob/main/Desafio_3_Romero_Federico.md) . Luego el codigo se encuentra en [Desafio_3_Romero_Federico.ipynb](https://github.com/fecheromero/PNL_tps_Romero_Federico/blob/main/Desafio_3_Romero_Federico.ipynb). En la sección inicial del `.md` se explaya un poco mas el uso de IA para este ejercicio: principalmente se utilizó el agente de IA de colab  para construir las funciones de soporte y gemini para mejorar la claridad yla gramatica del analisis final.
+
+## Desafio 4:
+Las conclusiones y todo el analisis de este desafio estan al final del ipynb [Desafio 4](https://github.com/fecheromero/PNL_tps_Romero_Federico/blob/main/Desafio_4_Romero_Federico.ipynb)
